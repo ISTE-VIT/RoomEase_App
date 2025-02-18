@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -20,27 +19,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.roomease.domain.model.Ticket
 import com.example.roomease.domain.model.TicketCategory
-import com.example.roomease.domain.model.TicketStatus
 import com.example.roomease.domain.model.TimeSlot
-import com.example.roomease.ui.viewmodel.ticket.TicketViewModel
+import com.example.roomease.ui.viewmodel.TicketViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTicketScreen(
+    ticketType: String,
     onTicketCreated: () -> Unit,
     onCancel: () -> Unit,
 ) {
     val viewModel: TicketViewModel = getViewModel()
 
-    var category by remember { mutableStateOf(TicketCategory.CLEANING.name) }
-    var contactNumber by remember { mutableStateOf("") }
-    var hostelBlock by remember { mutableStateOf("") }
-    var roomNumber by remember { mutableStateOf("") }
+    val category by remember { mutableStateOf(ticketType) }
     var timeSlot by remember { mutableStateOf(TimeSlot.MORNING.name) }
     var electricalIssue by remember { mutableStateOf("") }
 
@@ -57,27 +54,8 @@ fun CreateTicketScreen(
         ) {
             OutlinedTextField(
                 value = category,
-                onValueChange = { category = it },
+                onValueChange = { /* Typically fixed based on icon selection */ },
                 label = { Text("Category") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = contactNumber,
-                onValueChange = { contactNumber = it },
-                label = { Text("Contact Number") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = hostelBlock,
-                onValueChange = { hostelBlock = it },
-                label = { Text("Hostel Block") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = roomNumber,
-                onValueChange = { roomNumber = it },
-                label = { Text("Room Number") },
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
@@ -86,7 +64,7 @@ fun CreateTicketScreen(
                 label = { Text("Time Slot") },
                 modifier = Modifier.fillMaxWidth()
             )
-            if (category == "Electrical") {
+            if (category.equals("Electrical", ignoreCase = true)) {
                 OutlinedTextField(
                     value = electricalIssue,
                     onValueChange = { electricalIssue = it },
@@ -98,18 +76,12 @@ fun CreateTicketScreen(
             Row {
                 Button(
                     onClick = {
+                        val userId = Firebase.auth.currentUser?.uid.orEmpty()
                         val ticket = Ticket(
-                            id = "",
-                            userId = "user123",
-                            category = TicketCategory.valueOf(category),
-                            contactNumber = contactNumber,
-                            hostelBlock = hostelBlock,
-                            roomNumber = roomNumber,
-                            timeSlot = TimeSlot.valueOf(timeSlot),
-                            electricalIssueType = if (category == TicketCategory.ELECTRICAL.name) electricalIssue else null,
-                            status = TicketStatus.PENDING,
-                            createdAt = System.currentTimeMillis(),
-                            completedAt = null
+                            userId = userId,
+                            category = TicketCategory.valueOf(category.uppercase()),
+                            timeSlot = TimeSlot.valueOf(timeSlot.uppercase()),
+                            electricalIssueType = if (category.equals("Electrical", ignoreCase = true)) electricalIssue else null
                         )
                         viewModel.createTicket(ticket)
                         onTicketCreated()

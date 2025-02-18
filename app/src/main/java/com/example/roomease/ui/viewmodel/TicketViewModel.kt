@@ -1,4 +1,4 @@
-package com.example.roomease.ui.viewmodel.ticket
+package com.example.roomease.ui.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

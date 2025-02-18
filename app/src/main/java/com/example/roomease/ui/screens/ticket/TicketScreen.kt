@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.roomease.domain.model.Ticket
 import com.example.roomease.domain.model.TicketStatus
-import com.example.roomease.ui.viewmodel.ticket.TicketViewModel
+import com.example.roomease.ui.viewmodel.TicketViewModel
 import org.koin.androidx.compose.getViewModel
 
 
