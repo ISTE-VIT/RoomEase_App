@@ -12,7 +12,4 @@ object Login2
 object Home
 
 @Serializable
-object TicketList
-
-@Serializable
-data class CreateTicket(val userId: String)
+object EditProfile

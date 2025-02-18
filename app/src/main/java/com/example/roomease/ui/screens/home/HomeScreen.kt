@@ -1,4 +1,4 @@
-package com.example.roomease.ui.screens
+package com.example.roomease.ui.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

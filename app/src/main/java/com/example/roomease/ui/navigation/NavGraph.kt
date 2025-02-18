@@ -6,7 +6,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.roomease.ui.screens.HomePage
+import com.example.roomease.ui.screens.home.EditProfileScreen
+import com.example.roomease.ui.screens.home.MainBottomNavScreen
 import com.example.roomease.ui.screens.sign_in.Login2Screen
 import com.example.roomease.ui.screens.sign_in.SignInScreen
 import com.example.roomease.ui.screens.ticket.CreateTicketScreen
@@ -31,6 +32,10 @@ fun AppNavHost() {
     }
     val isUserDetailsProvider = userViewModel.userHostelDetails != null
 
+    // Start destination:
+    // • If not signed in => Login (SignInScreen)
+    // • If signed in but no additional details saved => Login2 (Login2Screen)
+    // • Otherwise, go to Home.
     val startDestination = when {
         !isUserLoggedIn -> Login
         isUserLoggedIn && !isUserDetailsProvider -> Login2
@@ -40,7 +45,8 @@ fun AppNavHost() {
     NavHost(navController, startDestination = startDestination) {
         composable<Login> {
             SignInScreen(onLoginSuccess = {
-                navController.navigate(Home) {
+                // Instead of navigating to Home, navigate to Login2 to collect extra details.
+                navController.navigate(Login2) {
                     popUpTo(Login::class) { inclusive = true }
                 }
             })
@@ -48,7 +54,6 @@ fun AppNavHost() {
 
         composable<Login2> {
             Login2Screen(
-                navController = navController,
                 onDetailsSubmitted = {
                     navController.navigate(Home) {
                         popUpTo(Login2::class) { inclusive = true }
@@ -63,26 +68,14 @@ fun AppNavHost() {
         }
 
         composable<Home> {
-            HomePage(navController = navController, name = "Ashwani")
+            MainBottomNavScreen(parentNavController = navController)
         }
-
-/*
-        composable<TicketList> { backStackEntry ->
-            TicketScreen(
-                userId = userId,
-                onNavigateToCreateTicket = {
-                    navController.navigate(CreateTicket(userId = userId))
-                }
-            )
-        }
-*/
 
         composable("new_ticket/{ticketType}") { backStackEntry ->
             val ticketType = backStackEntry.arguments?.getString("ticketType") ?: "UNKNOWN"
             CreateTicketScreen(
                 ticketType = ticketType,
                 onTicketCreated = {
-                    // Navigate back to the ticket list after ticket creation
                     navController.navigate(Home) {
                         popUpTo(Home::class) { inclusive = true }
                     }
@@ -90,6 +83,13 @@ fun AppNavHost() {
                 onCancel = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable<EditProfile> {
+            EditProfileScreen(
+                onProfileUpdated = { navController.popBackStack() },
+                onCancel = { navController.popBackStack() }
             )
         }
     }
