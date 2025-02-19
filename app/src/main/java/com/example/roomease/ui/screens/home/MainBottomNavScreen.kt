@@ -74,7 +74,7 @@ fun MainBottomNavScreen(parentNavController: NavHostController) {
         ) {
             composable(BottomNavItem.Home.route) {
                 // HomePage takes the parent navController for any navigation actions.
-                HomePage(navController = parentNavController, name = "Ashwani")
+                HomePage(name = "Ashwani")
             }
             composable(BottomNavItem.Tickets.route) {
                 // TicketScreen shows current and historical tickets.

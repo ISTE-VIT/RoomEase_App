@@ -58,6 +58,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    // Foundation
+    implementation (libs.androidx.foundation)
+
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
