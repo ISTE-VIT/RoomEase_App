@@ -27,10 +27,9 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 sealed class BottomNavItem(val route: String, val title: String, val icon: ImageVector) {
-    data object Home : BottomNavItem("bottom_home", "Home", Icons.Filled.Home)
     data object Tickets : BottomNavItem("bottom_tickets", "Tickets", Icons.AutoMirrored.Filled.List)
+    data object Home : BottomNavItem("bottom_home", "Home", Icons.Filled.Home)
     data object Profile : BottomNavItem("bottom_profile", "Profile", Icons.Filled.Person)
-    data object EditProfile : BottomNavItem("edit_profile", "Edit Profile", Icons.Filled.Person)
 }
 
 @Composable
@@ -44,8 +43,8 @@ fun MainBottomNavScreen(parentNavController: NavHostController) {
                 val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 listOf(
-                    BottomNavItem.Home,
                     BottomNavItem.Tickets,
+                    BottomNavItem.Home,
                     BottomNavItem.Profile
                 ).forEach { item ->
                     NavigationBarItem(
