@@ -1,11 +1,16 @@
 package com.example.roomease.domain.model
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 enum class HostelType {
     MENS, LADIES
 }
 
+@Serializable
 data class UserHostelDetails(
-    val userId: String = "",
+    @SerialName("uid")
+    val userId: String,
     val phoneNumber: String,
     val hostelType: HostelType,
     val hostelBlock: String,

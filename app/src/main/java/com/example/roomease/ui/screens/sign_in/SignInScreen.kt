@@ -25,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import com.example.roomease.R
 import com.example.roomease.utils.GoogleSignInUtils
 import androidx.compose.ui.platform.LocalContext
+import com.example.roomease.domain.repository.UserRepository
+import com.example.roomease.ui.viewmodel.UserViewModel
+import org.koin.androidx.compose.get
+import org.koin.androidx.compose.getViewModel
 
 @Composable
 fun SignInScreen(
@@ -33,6 +37,7 @@ fun SignInScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val userViewModel: UserViewModel = getViewModel()
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
         GoogleSignInUtils.doGoogleSignIn(
             context = context,
@@ -40,7 +45,8 @@ fun SignInScreen(
             launcher = null,
             login = {
                 Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-            }
+            },
+            userViewModel = userViewModel
         )
     }
 
@@ -91,7 +97,8 @@ fun SignInScreen(
                             login = {
                                 Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
                                 onLoginSuccess.invoke()
-                            }
+                            },
+                            userViewModel = userViewModel
                         )
                     },
                     modifier = Modifier

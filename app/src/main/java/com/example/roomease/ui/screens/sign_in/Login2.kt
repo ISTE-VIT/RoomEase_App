@@ -1,5 +1,6 @@
 package com.example.roomease.ui.screens.sign_in
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,16 +22,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.roomease.R
 import com.example.roomease.domain.model.HostelType
 import com.example.roomease.domain.model.UserHostelDetails
+import com.example.roomease.network.api.sendHostelDetailsToBackend
 import com.example.roomease.ui.viewmodel.UserViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +44,8 @@ fun Login2Screen(
     onDetailsSubmitted: () -> Unit,
     onSignOut: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     // States for phone and room number.
     val phoneState = remember { mutableStateOf("") }
     val roomNumberState = remember { mutableStateOf("") }
@@ -177,17 +184,25 @@ fun Login2Screen(
 
             Button(
                 onClick = {
-                    val userId = Firebase.auth.currentUser?.uid.orEmpty()
+                    val firebaseUid = Firebase.auth.currentUser?.uid.orEmpty()
                     val hostelTypeEnum = if (hostelTypeState.value == "Mens") HostelType.MENS else HostelType.LADIES
                     val details = UserHostelDetails(
-                        userId = userId,
+                        userId = firebaseUid,
                         phoneNumber = phoneState.value,
-                        hostelType = hostelTypeEnum,
+                        roomNumber = roomNumberState.value,
                         hostelBlock = hostelBlockState.value,
-                        roomNumber = roomNumberState.value
+                        hostelType = hostelTypeEnum
                     )
-                    userViewModel.saveUserDetails(details) {
-                        onDetailsSubmitted()
+                    scope.launch {
+                        val success = sendHostelDetailsToBackend(details)
+                        if (success) {
+                            userViewModel.saveUserDetails(details, onSuccess = {
+                                onDetailsSubmitted()
+                            })
+                        } else {
+                            // Handle failure
+                            Toast.makeText(context, "Failed to send hostel details", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 },
                 modifier = Modifier

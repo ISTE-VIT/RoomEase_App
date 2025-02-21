@@ -16,17 +16,26 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"https://4727-128-185-112-59.ngrok-free.app/\"")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            buildConfigField("String", "BASE_URL", "\"https://4727-128-185-112-59.ngrok-free.app/\"")
         }
     }
     compileOptions {
@@ -75,14 +84,10 @@ dependencies {
     // JSON-Serialization
     implementation(libs.kotlinx.serialization.json)
 
-    // ktor (api-calls)
-    implementation(libs.ktor.server.core)
-    implementation(libs.androidx.runtime.livedata)
-
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
-    implementation(libs.play.services.auth)
+    implementation (libs.play.services.auth.v2050)
     implementation(libs.firebase.auth.ktx)
 
     implementation(libs.androidx.credentials)
@@ -91,6 +96,19 @@ dependencies {
     // Android 13 and below.
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    // coroutines
+    implementation(libs.kotlinx.coroutines.core)
+
+    // ktor
+    implementation(platform(libs.ktor.bom))
+    implementation(libs.ktor.ktor.client.android)
+    implementation(libs.ktor.ktor.client.serialization)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.ktor.client.cio)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">RoomEase</string>
     <string name="web_client_id">74985235478-27e9k5rl4loh61lqrsra3rssgg2cjrka.apps.googleusercontent.com</string>
+    <string name="error_request_timeout">The request timed out :(</string>
+    <string name="error_too_many_requests">Oops, it seems your quota is exceeded.</string>
+    <string name="error_no_internet">Couldn\'t connect to server. Please check your  internet connection.</string>
+    <string name="error_unknown">Something went wrong. Please try again later.</string>
+    <string name="error_serialization">Couldn\'t serialize or deserialize data.</string>
 </resources>

@@ -1,5 +1,7 @@
 package com.example.roomease.domain.model
 
+import java.util.UUID
+
 enum class TicketCategory {
     CLEANING, ELECTRICAL, PLUMBING, AC
 }
@@ -36,8 +38,8 @@ data class Ticket(
 )*/
 
 data class Ticket(
-    val id: String = "",
-    val userId: String = "",
+    val id: UUID = UUID.randomUUID(),
+    val userId: String, // Ensure this is passed from an existing User object
     val category: TicketCategory,
     val timeSlot: TimeSlot,
     val electricalIssueType: String? = null,

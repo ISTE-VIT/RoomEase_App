@@ -7,6 +7,7 @@ import com.example.roomease.domain.repository.UserRepository
 import com.example.roomease.domain.usecase.CreateTicketUseCase
 import com.example.roomease.domain.usecase.GetTicketsForUserUseCase
 import com.example.roomease.domain.usecase.GetUserHostelDetailsUseCase
+import com.example.roomease.domain.usecase.SaveUserDetailsUseCase
 import com.example.roomease.domain.usecase.SaveUserHostelDetailsUseCase
 import com.example.roomease.domain.usecase.UpdateTicketStatusUseCase
 import com.example.roomease.ui.viewmodel.TicketViewModel
@@ -23,9 +24,10 @@ val appModule = module {
     // Provide use case
     factory { GetUserHostelDetailsUseCase(get()) }
     factory { SaveUserHostelDetailsUseCase(get()) }
+    factory { SaveUserDetailsUseCase(get()) }
 
     // Provide ViewModels
-    viewModel { UserViewModel(get(), get()) }
+    viewModel { UserViewModel(get(), get(), get()) }
 
 
     /*------Ticket-related dependencies-----*/

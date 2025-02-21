@@ -66,7 +66,7 @@ fun TicketScreen(userId: String,
             items(tickets) { ticket ->
                 TicketItem(ticket = ticket, onClose = {
                     if (ticket.status != TicketStatus.COMPLETED) {
-                        viewModel.closeTicket(ticket.id, ticket.userId)
+                        viewModel.closeTicket(ticket.id.toString(), ticket.userId)
                     }
                 })
 

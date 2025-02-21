@@ -14,7 +14,7 @@ class TicketRepositoryImpl : TicketRepository {
     }
 
     override suspend fun updateTicket(ticketId: String, newStatus: TicketStatus): Result<Unit> {
-        val index = tickets.indexOfFirst { it.id ==  ticketId }
+        val index = tickets.indexOfFirst { it.id.toString() ==  ticketId }
         return if (index != -1) {
             val oldTicket = tickets[index]
             val updatedTicket = oldTicket.copy(

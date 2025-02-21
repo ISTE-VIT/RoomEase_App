@@ -3,6 +3,7 @@ package com.example.roomease.ui.navigation
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,6 +13,7 @@ import com.example.roomease.ui.screens.sign_in.Login2Screen
 import com.example.roomease.ui.screens.sign_in.SignInScreen
 import com.example.roomease.ui.screens.ticket.CreateTicketScreen
 import com.example.roomease.ui.viewmodel.UserViewModel
+import com.example.roomease.utils.GoogleSignInUtils
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import org.koin.androidx.compose.getViewModel
@@ -19,6 +21,7 @@ import org.koin.androidx.compose.getViewModel
 @SuppressLint("RestrictedApi")
 @Composable
 fun AppNavHost() {
+    val context = LocalContext.current
     val navController = rememberNavController()
     val userId = Firebase.auth.currentUser?.uid ?: ""
     val isUserLoggedIn = Firebase.auth.currentUser != null && !Firebase.auth.currentUser!!.isAnonymous
@@ -60,6 +63,7 @@ fun AppNavHost() {
                     }
                 },
                 onSignOut = {
+                    GoogleSignInUtils.logout(context)
                     navController.navigate(Login) {
                         popUpTo(Login2::class) { inclusive = true }
                     }
