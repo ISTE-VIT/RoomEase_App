@@ -1,14 +1,17 @@
 package com.example.roomease.ui.screens.ticket
 
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -26,53 +29,71 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.roomease.domain.model.ACDetails
+import com.example.roomease.domain.model.CleaningDetails
+import com.example.roomease.domain.model.ElectricalDetails
+import com.example.roomease.domain.model.PlumbingDetails
 import com.example.roomease.domain.model.Ticket
 import com.example.roomease.domain.model.TicketCategory
+import com.example.roomease.domain.model.TicketDetails
+import com.example.roomease.domain.model.TicketStatus
 import com.example.roomease.domain.model.TimeSlot
+import com.example.roomease.network.api.sendTicketToBackend
 import com.example.roomease.ui.viewmodel.TicketViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTicketScreen(
     ticketType: String,
     onTicketCreated: () -> Unit,
-    onCancel: () -> Unit,
+    onCancel: () -> Unit
 ) {
     val viewModel: TicketViewModel = getViewModel()
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     // The ticket category is fixed based on the selection from Home.
-    val category by remember { mutableStateOf(ticketType) }
+    val category by remember { mutableStateOf(ticketType.uppercase()) }
 
     // Determine which UI to show.
-    val isCleaning = category.equals("Cleaning", ignoreCase = true)
-    val isElectrical = category.equals("Electrical", ignoreCase = true)
-    val isPlumbing = category.equals("Plumbing", ignoreCase = true)
+    val isCleaning = category == "CLEANING"
+    val isElectrical = category == "ELECTRICAL"
+    val isPlumbing = category == "PLUMBING"
+    val isAC = category == "AC"
 
-    // For Cleaning tickets: TimeSlot drop-down.
+    // Common timeslot options (used by CLEANING, ELECTRICAL, AC)
     val timeSlotOptions = TimeSlot.entries.map { it.displayName }
     var timeSlot by remember { mutableStateOf("") }
     val timeSlotExpanded = remember { mutableStateOf(false) }
 
-    // For Electrical tickets: Dropdown plus additional description.
+    // Electrical-specific
     val electricalOptions = listOf("Light", "Fan", "Switch", "Wiring", "Socket")
     var electricalIssue by remember { mutableStateOf("") }
     val electricalExpanded = remember { mutableStateOf(false) }
     var electricalDescription by remember { mutableStateOf("") }
 
-    // For Plumbing tickets: Dropdown plus additional description.
-    val plumbingOptions = listOf("Water-Cooler", "Water-Filter", "Tap", "Geyser", "Washrooms", "Toilets")
+    // Plumbing-specific
+    val plumbingOptions = listOf("Water Cooler", "Water Filter", "Tap", "Geyser", "Washrooms", "Toilets")
     var plumbingIssue by remember { mutableStateOf("") }
     val plumbingExpanded = remember { mutableStateOf(false) }
     var plumbingDescription by remember { mutableStateOf("") }
 
-    // For other tickets: Use a description field.
-    var description by remember { mutableStateOf("") }
+    // AC-specific
+    var acDescription by remember { mutableStateOf("") }
+
+    // If "other" categories exist, they'd have their own states or fallback logic
+    // Just for demonstration, we'll have a 'description' fallback
+    var generalDescription by remember { mutableStateOf("") }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -104,133 +125,237 @@ fun CreateTicketScreen(
                     enabled = false
                 )
 
-                if (isCleaning) {
-                    // TimeSlot drop-down for cleaning tickets.
-                    ExposedDropdownMenuBox(
-                        expanded = timeSlotExpanded.value,
-                        onExpandedChange = { timeSlotExpanded.value = !timeSlotExpanded.value }
-                    ) {
-                        OutlinedTextField(
-                            value = timeSlot,
-                            onValueChange = { /* no-op */ },
-                            readOnly = true,
-                            label = { Text("Time Slot") },
-                            placeholder = { if (timeSlot.isEmpty()) Text("Select Time Slot") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = timeSlotExpanded.value)
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
+                // Show relevant input UI based on category
+                when {
+                    isCleaning -> {
+                        // TimeSlot drop-down for cleaning
+                        ExposedDropdownMenuBox(
                             expanded = timeSlotExpanded.value,
-                            onDismissRequest = { timeSlotExpanded.value = false },
-                            modifier = Modifier.fillMaxWidth()
+                            onExpandedChange = { timeSlotExpanded.value = !timeSlotExpanded.value }
                         ) {
-                            timeSlotOptions.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = {
-                                        timeSlot = option
-                                        timeSlotExpanded.value = false
-                                    }
-                                )
+                            OutlinedTextField(
+                                value = timeSlot,
+                                onValueChange = { /* no-op */ },
+                                readOnly = true,
+                                label = { Text("Time Slot") },
+                                placeholder = {
+                                    if (timeSlot.isEmpty()) Text("Select Time Slot")
+                                },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = timeSlotExpanded.value)
+                                },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = timeSlotExpanded.value,
+                                onDismissRequest = { timeSlotExpanded.value = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                timeSlotOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            timeSlot = option
+                                            timeSlotExpanded.value = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
-                } else if (isElectrical) {
-                    // Electrical issue drop-down.
-                    ExposedDropdownMenuBox(
-                        expanded = electricalExpanded.value,
-                        onExpandedChange = { electricalExpanded.value = !electricalExpanded.value }
-                    ) {
-                        OutlinedTextField(
-                            value = electricalIssue,
-                            onValueChange = { /* no-op */ },
-                            readOnly = true,
-                            label = { Text("Electrical Issue") },
-                            placeholder = { if (electricalIssue.isEmpty()) Text("Select Issue") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = electricalExpanded.value)
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
+
+                    isElectrical -> {
+                        // TimeSlot drop-down for electrical
+                        ExposedDropdownMenuBox(
+                            expanded = timeSlotExpanded.value,
+                            onExpandedChange = { timeSlotExpanded.value = !timeSlotExpanded.value }
+                        ) {
+                            OutlinedTextField(
+                                value = timeSlot,
+                                onValueChange = { /* no-op */ },
+                                readOnly = true,
+                                label = { Text("Time Slot") },
+                                placeholder = {
+                                    if (timeSlot.isEmpty()) Text("Select Time Slot")
+                                },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = timeSlotExpanded.value)
+                                },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = timeSlotExpanded.value,
+                                onDismissRequest = { timeSlotExpanded.value = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                timeSlotOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            timeSlot = option
+                                            timeSlotExpanded.value = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Electrical issue drop-down
+                        ExposedDropdownMenuBox(
                             expanded = electricalExpanded.value,
-                            onDismissRequest = { electricalExpanded.value = false },
-                            modifier = Modifier.fillMaxWidth()
+                            onExpandedChange = {
+                                electricalExpanded.value = !electricalExpanded.value
+                            }
                         ) {
-                            electricalOptions.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = {
-                                        electricalIssue = option
-                                        electricalExpanded.value = false
-                                    }
-                                )
+                            OutlinedTextField(
+                                value = electricalIssue,
+                                onValueChange = { /* no-op */ },
+                                readOnly = true,
+                                label = { Text("Electrical Issue") },
+                                placeholder = {
+                                    if (electricalIssue.isEmpty()) Text("Select Issue")
+                                },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = electricalExpanded.value)
+                                },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = electricalExpanded.value,
+                                onDismissRequest = { electricalExpanded.value = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                electricalOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            electricalIssue = option
+                                            electricalExpanded.value = false
+                                        }
+                                    )
+                                }
                             }
                         }
-                    }
-                    // Additional description field for electrical tickets.
-                    OutlinedTextField(
-                        value = electricalDescription,
-                        onValueChange = { electricalDescription = it },
-                        label = { Text("Additional Description (optional)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else if (isPlumbing) {
-                    // Plumbing issue drop-down.
-                    ExposedDropdownMenuBox(
-                        expanded = plumbingExpanded.value,
-                        onExpandedChange = { plumbingExpanded.value = !plumbingExpanded.value }
-                    ) {
+
+                        // Additional description field
                         OutlinedTextField(
-                            value = plumbingIssue,
-                            onValueChange = { /* no-op */ },
-                            readOnly = true,
-                            label = { Text("Plumbing Issue") },
-                            placeholder = { if (plumbingIssue.isEmpty()) Text("Select Issue") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = plumbingExpanded.value)
-                            },
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = plumbingExpanded.value,
-                            onDismissRequest = { plumbingExpanded.value = false },
+                            value = electricalDescription,
+                            onValueChange = { electricalDescription = it },
+                            label = { Text("Additional Description (optional)") },
                             modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    isPlumbing -> {
+                        // Plumbing issue drop-down
+                        ExposedDropdownMenuBox(
+                            expanded = plumbingExpanded.value,
+                            onExpandedChange = {
+                                plumbingExpanded.value = !plumbingExpanded.value
+                            }
                         ) {
-                            plumbingOptions.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option) },
-                                    onClick = {
-                                        plumbingIssue = option
-                                        plumbingExpanded.value = false
-                                    }
-                                )
+                            OutlinedTextField(
+                                value = plumbingIssue,
+                                onValueChange = { /* no-op */ },
+                                readOnly = true,
+                                label = { Text("Plumbing Issue") },
+                                placeholder = {
+                                    if (plumbingIssue.isEmpty()) Text("Select Issue")
+                                },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = plumbingExpanded.value)
+                                },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = plumbingExpanded.value,
+                                onDismissRequest = { plumbingExpanded.value = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                plumbingOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            plumbingIssue = option
+                                            plumbingExpanded.value = false
+                                        }
+                                    )
+                                }
                             }
                         }
+
+                        // Additional description field
+                        OutlinedTextField(
+                            value = plumbingDescription,
+                            onValueChange = { plumbingDescription = it },
+                            label = { Text("Additional Description (optional)") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
-                    // Additional description field for plumbing tickets.
-                    OutlinedTextField(
-                        value = plumbingDescription,
-                        onValueChange = { plumbingDescription = it },
-                        label = { Text("Additional Description (optional)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    // For other ticket types, show a description field.
-                    OutlinedTextField(
-                        value = description,
-                        onValueChange = { description = it },
-                        label = { Text("Description") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+
+                    isAC -> {
+                        // AC also has a time slot plus description
+                        ExposedDropdownMenuBox(
+                            expanded = timeSlotExpanded.value,
+                            onExpandedChange = { timeSlotExpanded.value = !timeSlotExpanded.value }
+                        ) {
+                            OutlinedTextField(
+                                value = timeSlot,
+                                onValueChange = { /* no-op */ },
+                                readOnly = true,
+                                label = { Text("Time Slot") },
+                                placeholder = {
+                                    if (timeSlot.isEmpty()) Text("Select Time Slot")
+                                },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = timeSlotExpanded.value)
+                                },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = timeSlotExpanded.value,
+                                onDismissRequest = { timeSlotExpanded.value = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                timeSlotOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option) },
+                                        onClick = {
+                                            timeSlot = option
+                                            timeSlotExpanded.value = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        OutlinedTextField(
+                            value = acDescription,
+                            onValueChange = { acDescription = it },
+                            label = { Text("AC Description") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    else -> {
+                        // Any other categories? Show a simple description
+                        OutlinedTextField(
+                            value = generalDescription,
+                            onValueChange = { generalDescription = it },
+                            label = { Text("Description") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -242,52 +367,66 @@ fun CreateTicketScreen(
                     Button(
                         onClick = {
                             val userId = Firebase.auth.currentUser?.uid.orEmpty()
-                            val finalTicket: Ticket = when {
+
+                            // Build the sealed details object based on category
+                            val details: TicketDetails = when {
                                 isCleaning -> {
-                                    // For cleaning, use the selected time slot.
-                                    val selectedTimeSlot: TimeSlot = TimeSlot.fromDisplayName(timeSlot)
-                                        ?: TimeSlot.MORNING
-                                    Ticket(
-                                        userId = userId,
-                                        category = TicketCategory.valueOf(category.uppercase()),
-                                        timeSlot = selectedTimeSlot,
-                                        electricalIssueType = null
-                                    )
+                                    val slot = TimeSlot.fromDisplayName(timeSlot) ?: TimeSlot.MORNING
+                                    CleaningDetails(timeSlot = slot)
                                 }
                                 isElectrical -> {
-                                    // Combine electrical dropdown selection and additional description if provided.
-                                    val combined = if (electricalDescription.isNotBlank())
-                                        "$electricalIssue - $electricalDescription"
-                                    else electricalIssue
-                                    Ticket(
-                                        userId = userId,
-                                        category = TicketCategory.valueOf(category.uppercase()),
-                                        timeSlot = TimeSlot.MORNING, // Default (not used)
-                                        electricalIssueType = combined
+                                    val slot = TimeSlot.fromDisplayName(timeSlot) ?: TimeSlot.MORNING
+                                    ElectricalDetails(
+                                        timeSlot = slot,
+                                        electricalIssueType = electricalIssue.takeIf { it.isNotBlank() },
+                                        additionalDescription = electricalDescription.takeIf { it.isNotBlank() }
                                     )
                                 }
                                 isPlumbing -> {
-                                    val combined = if (plumbingDescription.isNotBlank())
-                                        "$plumbingIssue - $plumbingDescription"
-                                    else plumbingIssue
-                                    Ticket(
-                                        userId = userId,
-                                        category = TicketCategory.valueOf(category.uppercase()),
-                                        timeSlot = TimeSlot.MORNING, // Default (not used)
-                                        electricalIssueType = combined
+                                    PlumbingDetails(
+                                        plumbingIssue = plumbingIssue.takeIf { it.isNotBlank() },
+                                        additionalDescription = plumbingDescription.takeIf { it.isNotBlank() }
+                                    )
+                                }
+                                isAC -> {
+                                    val slot = TimeSlot.fromDisplayName(timeSlot) ?: TimeSlot.MORNING
+                                    ACDetails(
+                                        timeSlot = slot,
+                                        acDescription = acDescription
                                     )
                                 }
                                 else -> {
-                                    Ticket(
-                                        userId = userId,
-                                        category = TicketCategory.valueOf(category.uppercase()),
-                                        timeSlot = TimeSlot.MORNING, // Default
-                                        electricalIssueType = description
-                                    )
+                                    // Fallback for unhandled categories
+                                    // Could store a minimal details object or error out
+                                    ACDetails(TimeSlot.MORNING, generalDescription)
                                 }
                             }
-                            viewModel.createTicket(finalTicket)
-                            onTicketCreated()
+
+                            val finalTicket = Ticket(
+                                userId = userId,
+                                status = TicketStatus.PENDING,
+                                category = TicketCategory.valueOf(category),
+                                details = details
+                            )
+
+                            // Launch a coroutine to send the ticket to the backend.
+                            // Integration with backend:
+                            scope.launch {
+                                val sent = sendTicketToBackend(finalTicket)
+                                if (sent) {
+                                    // Optionally, save locally in ViewModel
+                                    viewModel.createTicket(finalTicket)
+                                    onTicketCreated()
+                                } else {
+                                    Toast.makeText(
+                                        // Use context to show a toast
+                                        context,
+                                        "Failed to create ticket",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+
                         },
                         modifier = Modifier.weight(1f)
                     ) {

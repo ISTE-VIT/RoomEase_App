@@ -1,4 +1,4 @@
-package com.example.roomease.utils
+package com.example.roomease.utils.network
 
 enum class NetworkError: Error {
     REQUEST_TIMEOUT,

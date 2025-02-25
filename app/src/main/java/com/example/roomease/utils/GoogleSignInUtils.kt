@@ -18,6 +18,7 @@ import com.example.roomease.network.HttpClientFactory
 import com.example.roomease.network.constructUrl
 import com.example.roomease.network.safeCall
 import com.example.roomease.ui.viewmodel.UserViewModel
+import com.example.roomease.utils.network.Result
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.Firebase
@@ -30,7 +31,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.koin.core.component.KoinComponent
-import java.util.UUID
 
 class GoogleSignInUtils : KoinComponent {
 
@@ -70,10 +70,8 @@ class GoogleSignInUtils : KoinComponent {
                                             // Send the token to the backend
                                             val sent = sendFirebaseTokenToBackend(idToken)
                                             if (sent) {
-                                                // Create the domain User, converting Firebase uid to a UUID.
-                                                // Here we use nameUUIDFromBytes to generate a UUID from the uid string.
                                                 val userDetails = User(
-                                                    userId = UUID.nameUUIDFromBytes(it.uid.toByteArray()),
+                                                    userId = it.uid,
                                                     username = it.displayName ?: "",
                                                     email = it.email,
                                                 )

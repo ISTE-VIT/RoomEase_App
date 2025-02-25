@@ -1,7 +1,7 @@
 package com.example.roomease.network
 
-import com.example.roomease.utils.NetworkError
-import com.example.roomease.utils.Result
+import com.example.roomease.utils.network.NetworkError
+import com.example.roomease.utils.network.Result
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse

@@ -4,7 +4,7 @@ import com.example.roomease.domain.model.UserHostelDetails
 import com.example.roomease.network.HttpClientFactory
 import com.example.roomease.network.constructUrl
 import com.example.roomease.network.safeCall
-import com.example.roomease.utils.Result
+import com.example.roomease.utils.network.Result
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody

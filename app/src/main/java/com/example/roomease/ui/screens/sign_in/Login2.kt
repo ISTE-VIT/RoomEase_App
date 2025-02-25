@@ -53,7 +53,7 @@ fun Login2Screen(
     // Options for hostel type and hostel blocks.
     val hostelTypeOptions = listOf("Mens", "Ladies")
     val mensHostelBlocks = listOf("A", "B", "C", "D", "E", "F", "G", "H", "K", "L", "M", "N", "P", "Q", "R", "S", "T")
-    val ladiesHostelBlocks = listOf("A", "B", "C", "D", "E", "F", "G", "H", "I")
+    val ladiesHostelBlocks = listOf("A", "B", "C", "D", "E", "F", "G", "H", "J")
 
     // States for dropdown selections.
     val hostelTypeState = remember { mutableStateOf("Mens") }
@@ -202,6 +202,7 @@ fun Login2Screen(
                         } else {
                             // Handle failure
                             Toast.makeText(context, "Failed to send hostel details", Toast.LENGTH_SHORT).show()
+                            onDetailsSubmitted()  // Added for testing purpose
                         }
                     }
                 },

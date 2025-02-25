@@ -2,7 +2,7 @@ package com.example.roomease.ui.errors
 
 import android.content.Context
 import com.example.roomease.R
-import com.example.roomease.utils.NetworkError
+import com.example.roomease.utils.network.NetworkError
 
 fun NetworkError.toString(context: Context): String {
     val resId = when (this) {

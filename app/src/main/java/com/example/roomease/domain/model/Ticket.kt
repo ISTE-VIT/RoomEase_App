@@ -1,15 +1,25 @@
 package com.example.roomease.domain.model
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.example.roomease.utils.serializer.LocalDateTimeSerializer
+import com.example.roomease.utils.serializer.UUIDSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.util.UUID
+import java.time.LocalDateTime
 
+@Serializable
 enum class TicketCategory {
     CLEANING, ELECTRICAL, PLUMBING, AC
 }
 
+@Serializable
 enum class TicketStatus {
     PENDING, COMPLETED
 }
 
+@Serializable
 enum class TimeSlot(val displayName: String) {
     MORNING("Morning"),
     AFTERNOON("Afternoon"),
@@ -22,28 +32,42 @@ enum class TimeSlot(val displayName: String) {
     }
 }
 
-/*
-data class Ticket(
-    val id: String = "",
-    val userId: String = "",
-    val category: TicketCategory,
-    val contactNumber: String,
-    val hostelBlock: String,
-    val roomNumber: String,
-    val timeSlot: TimeSlot,
-    val electricalIssueType: String? = null,
-    val status: TicketStatus = TicketStatus.PENDING,
-    val createdAt: Long = System.currentTimeMillis(),
-    val completedAt: Long? = null
-)*/
+@Serializable
+sealed interface TicketDetails
 
-data class Ticket(
-    val id: UUID = UUID.randomUUID(),
-    val userId: String, // Ensure this is passed from an existing User object
-    val category: TicketCategory,
+@Serializable
+data class CleaningDetails(
+    val timeSlot: TimeSlot
+) : TicketDetails
+
+@Serializable
+data class ElectricalDetails(
     val timeSlot: TimeSlot,
-    val electricalIssueType: String? = null,
-    val status: TicketStatus = TicketStatus.PENDING,
-    val createdAt: Long = System.currentTimeMillis(),
-    val completedAt: Long? = null
+    val electricalIssueType: String?,
+    val additionalDescription: String?
+) : TicketDetails
+
+@Serializable
+data class PlumbingDetails(
+    val plumbingIssue: String?,
+    val additionalDescription: String?
+) : TicketDetails
+
+@Serializable
+data class ACDetails(
+    val timeSlot: TimeSlot,
+    val acDescription: String
+) : TicketDetails
+
+@Serializable
+@RequiresApi(Build.VERSION_CODES.O)
+data class Ticket @RequiresApi(Build.VERSION_CODES.O) constructor(
+    @Serializable(with = UUIDSerializer::class) val id: UUID = UUID.randomUUID(),
+    @SerialName("firebaseUid")
+    val userId: String,
+    val status: TicketStatus,
+    val category: TicketCategory,
+    @Serializable(with = LocalDateTimeSerializer::class) val createdAt: LocalDateTime = LocalDateTime.now(),
+    @Serializable(with = LocalDateTimeSerializer::class) val completedAt: LocalDateTime? = null,
+    val details: TicketDetails
 )
