@@ -65,7 +65,7 @@ data class Ticket @RequiresApi(Build.VERSION_CODES.O) constructor(
     @Serializable(with = UUIDSerializer::class) val id: UUID = UUID.randomUUID(),
     @SerialName("firebaseUid")
     val userId: String,
-    val status: TicketStatus,
+    val status: TicketStatus = TicketStatus.PENDING,
     val category: TicketCategory,
     @Serializable(with = LocalDateTimeSerializer::class) val createdAt: LocalDateTime = LocalDateTime.now(),
     @Serializable(with = LocalDateTimeSerializer::class) val completedAt: LocalDateTime? = null,

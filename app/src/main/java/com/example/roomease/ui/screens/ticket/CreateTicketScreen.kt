@@ -296,7 +296,7 @@ fun CreateTicketScreen(
                         OutlinedTextField(
                             value = plumbingDescription,
                             onValueChange = { plumbingDescription = it },
-                            label = { Text("Additional Description (optional)") },
+                            label = { Text("Additional Description") },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

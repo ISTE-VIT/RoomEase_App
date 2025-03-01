@@ -1,6 +1,7 @@
 package com.example.roomease.ui.screens.ticket
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,7 +28,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.roomease.domain.model.ACDetails
 import com.example.roomease.domain.model.CleaningDetails
@@ -36,9 +39,10 @@ import com.example.roomease.domain.model.PlumbingDetails
 import com.example.roomease.domain.model.Ticket
 import com.example.roomease.domain.model.TicketDetails
 import com.example.roomease.domain.model.TicketStatus
+import com.example.roomease.network.api.closeTicketOnBackend
 import com.example.roomease.ui.viewmodel.TicketViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.getViewModel
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -111,6 +115,10 @@ fun TicketItem(
     ticket: Ticket,
     onClose: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val viewModel: TicketViewModel = getViewModel()
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -210,7 +218,17 @@ fun TicketItem(
 
             // Close ticket button if not completed
             if (ticket.status != TicketStatus.COMPLETED) {
-                Button(onClick = onClose) {
+                Button(onClick = {
+                    scope.launch {
+                        val closed = closeTicketOnBackend(ticket.userId, ticket.category.toString())
+                        if (closed) {
+                            viewModel.closeTicket(ticket.id.toString(), ticket.userId)
+                            onClose()
+                        } else {
+                            Toast.makeText(context, "Failed to close ticket", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }) {
                     Text("Close Ticket")
                 }
             } else {

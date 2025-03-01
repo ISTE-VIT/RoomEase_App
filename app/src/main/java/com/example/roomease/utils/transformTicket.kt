@@ -6,14 +6,12 @@ import com.example.roomease.domain.model.PlumbingDetails
 import com.example.roomease.domain.model.ACDetails
 import com.example.roomease.domain.model.Ticket
 import com.example.roomease.domain.model.TicketCategory
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.JsonObject
 
-@OptIn(InternalSerializationApi::class)
 fun transformTicket(ticket: Ticket): String {
     val json = Json { prettyPrint = true }
     val base = buildJsonObject {

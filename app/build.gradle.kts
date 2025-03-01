@@ -25,7 +25,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"https://9f5b-128-185-112-59.ngrok-free.app/\"")
+            buildConfigField("String", "BASE_URL", "\"https://d2f4-128-185-112-59.ngrok-free.app/\"")
         }
 
         release {
@@ -35,7 +35,7 @@ android {
                 "proguard-rules.pro"
             )
 
-            buildConfigField("String", "BASE_URL", "\"https://9f5b-128-185-112-59.ngrok-free.app/\"")
+            buildConfigField("String", "BASE_URL", "\"https://d2f4-128-185-112-59.ngrok-free.app/\"")
         }
     }
     compileOptions {
