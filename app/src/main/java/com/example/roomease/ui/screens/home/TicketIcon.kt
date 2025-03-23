@@ -17,37 +17,41 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+
+
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.graphics.Color
 
 @Composable
 fun TicketIcon(
     type: String,
     imageId: Int,
-    onTicketClick: (String) -> Unit
+    onTicketClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     // Use a rounded Box with a Column to neatly display the icon above the label.
-    Box(
-        modifier = Modifier
-            .padding(8.dp)
-            .size(160.dp)
-            .background(
-                color = Color(0xFF070303),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .clickable { onTicketClick(type) },
-        contentAlignment = Alignment.Center
-    ) {
+   Box(
+       modifier = modifier
+           .padding(8.dp)
+           .background(
+               color = MaterialTheme.colorScheme.surfaceContainer,
+               shape = RoundedCornerShape(16.dp)
+           )
+           .clickable { onTicketClick(type) },
+       contentAlignment = Alignment.Center
+   )
+    {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
+            //verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.padding(16.dp)
         ) {
             Image(
                 painter = painterResource(id = imageId),
                 contentDescription = "$type Icon",
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.size(48.dp)
             )
-            Spacer(modifier = Modifier.padding(4.dp))
+            Spacer(modifier = Modifier.padding(8.dp))
             Text(
                 text = type,
                 style = MaterialTheme.typography.bodyMedium,

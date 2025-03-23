@@ -1,5 +1,7 @@
 package com.example.roomease.ui.screens.home
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -32,6 +34,7 @@ sealed class BottomNavItem(val route: String, val title: String, val icon: Image
     data object Profile : BottomNavItem("bottom_profile", "Profile", Icons.Filled.Person)
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainBottomNavScreen(parentNavController: NavHostController) {
     // This nested NavController handles bottom navigation among the main sections.
