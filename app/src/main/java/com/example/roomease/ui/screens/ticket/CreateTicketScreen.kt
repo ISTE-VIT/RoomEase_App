@@ -97,7 +97,7 @@ fun CreateTicketScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceContainer
     ) {
         Scaffold(
             topBar = {

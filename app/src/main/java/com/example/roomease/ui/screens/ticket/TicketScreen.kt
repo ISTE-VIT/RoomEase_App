@@ -30,7 +30,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.roomease.domain.model.ACDetails
 import com.example.roomease.domain.model.CleaningDetails
@@ -124,7 +126,7 @@ fun TicketItem(
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -134,13 +136,16 @@ fun TicketItem(
             // Category as a small "header"
             Text(
                 text = "Category: ${ticket.category}",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium ,
+                fontWeight = FontWeight.Bold, // Makes the text bold
+                color = MaterialTheme.colorScheme.primary // Sets the text color
             )
 
             // Sub-header row (status, created, etc.)
             Text(
                 text = "Status: ${ticket.status}",
                 style = MaterialTheme.typography.bodyMedium,
+                color = if (ticket.status == TicketStatus.COMPLETED) Color(0xFF86BD90) else Color(0xFFE97B9F),
                 modifier = Modifier.padding(top = 4.dp)
             )
 
@@ -148,6 +153,7 @@ fun TicketItem(
             Text(
                 text = "Created At: ${formatEpochMillis(ticket.createdAt)}",
                 style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Light, // Makes the text bold
                 modifier = Modifier.padding(top = 2.dp)
             )
 
@@ -156,6 +162,7 @@ fun TicketItem(
                 Text(
                     text = "Completed At: ${formatEpochMillis(it)}",
                     style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Light, // Makes the text bold
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -238,6 +245,8 @@ fun TicketItem(
             } else {
                 Text(
                     text = "Ticket Closed",
+                    fontWeight = FontWeight.Bold, // Makes the text bold
+                    color = MaterialTheme.colorScheme.primary, // Sets the text color
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 4.dp)
                 )
