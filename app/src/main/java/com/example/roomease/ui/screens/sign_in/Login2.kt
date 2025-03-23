@@ -194,6 +194,7 @@ fun Login2Screen(
                         hostelType = hostelTypeEnum
                     )
                     scope.launch {
+/*
                         val success = sendHostelDetailsToBackend(details)
                         if (success) {
                             userViewModel.saveUserDetails(details, onSuccess = {
@@ -204,6 +205,10 @@ fun Login2Screen(
                             Toast.makeText(context, "Failed to send hostel details", Toast.LENGTH_SHORT).show()
                             onDetailsSubmitted()  // Added for testing purpose
                         }
+*/
+                        userViewModel.saveUserDetails(details, onSuccess = {
+                            onDetailsSubmitted()
+                        })
                     }
                 },
                 modifier = Modifier

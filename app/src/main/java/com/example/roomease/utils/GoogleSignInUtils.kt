@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.koin.core.component.KoinComponent
+import androidx.core.content.edit
 
 class GoogleSignInUtils : KoinComponent {
 
@@ -57,16 +58,15 @@ class GoogleSignInUtils : KoinComponent {
                                 val googleIdTokenCredential =
                                     GoogleIdTokenCredential.createFrom(result.credential.data)
                                 val googleTokenId = googleIdTokenCredential.idToken
-                                val authCredential =
-                                    GoogleAuthProvider.getCredential(googleTokenId, null)
-                                val firebaseUser =
-                                    Firebase.auth.signInWithCredential(authCredential).await().user
+                                val authCredential = GoogleAuthProvider.getCredential(googleTokenId, null)
+                                val firebaseUser = Firebase.auth.signInWithCredential(authCredential).await().user
                                 firebaseUser?.let {
                                     if (!it.isAnonymous) {
                                         // Retrieve the Firebase ID token
                                         val tokenResult = it.getIdToken(true).await()
                                         val idToken = tokenResult.token
                                         if (idToken != null) {
+/*
                                             // Send the token to the backend
                                             val sent = sendFirebaseTokenToBackend(idToken)
                                             if (sent) {
@@ -82,6 +82,16 @@ class GoogleSignInUtils : KoinComponent {
                                             } else {
                                                 // Handle token sending error if needed.
                                             }
+*/
+                                            val userDetails = User(
+                                                userId = it.uid,
+                                                username = it.displayName ?: "",
+                                                email = it.email,
+                                            )
+                                            // Store user information via the viewmodel.
+                                            userViewModel.storeUser(userDetails) {
+                                                login.invoke()
+                                            }
                                         } else {
                                             // If no token is available, continue without sending.
                                             login.invoke()
@@ -94,7 +104,7 @@ class GoogleSignInUtils : KoinComponent {
                             /* Handle other credential types if needed */
                         }
                     }
-                } catch (e: NoCredentialException) {
+                } catch (_: NoCredentialException) {
                     launcher?.launch(getIntent())
                 } catch (e: GetCredentialException) {
                     e.printStackTrace()
@@ -105,7 +115,7 @@ class GoogleSignInUtils : KoinComponent {
         fun logout(context: Context) {
             // Clear stored user data
             val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-            sharedPreferences.edit().clear().apply()
+            sharedPreferences.edit { clear() }
 
             // Sign out from Firebase
             Firebase.auth.signOut()

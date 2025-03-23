@@ -412,6 +412,7 @@ fun CreateTicketScreen(
                             // Launch a coroutine to send the ticket to the backend.
                             // Integration with backend:
                             scope.launch {
+/*
                                 val sent = sendTicketToBackend(finalTicket)
                                 if (sent) {
                                     // Optionally, save locally in ViewModel
@@ -425,6 +426,9 @@ fun CreateTicketScreen(
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
+*/
+                                viewModel.createTicket(finalTicket)
+                                onTicketCreated()
                             }
 
                         },

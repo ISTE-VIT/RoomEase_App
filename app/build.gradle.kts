@@ -25,7 +25,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"https://d2f4-128-185-112-59.ngrok-free.app/\"")
+            buildConfigField("String", "BASE_URL", "\"https://roomeasebackend1.onrender.com/\"")
         }
 
         release {
@@ -35,7 +35,7 @@ android {
                 "proguard-rules.pro"
             )
 
-            buildConfigField("String", "BASE_URL", "\"https://d2f4-128-185-112-59.ngrok-free.app/\"")
+            buildConfigField("String", "BASE_URL", "\"https://roomeasebackend1.onrender.com/\"")
         }
     }
     compileOptions {
@@ -96,6 +96,8 @@ dependencies {
     // Android 13 and below.
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation (libs.androidx.credentials)
+    implementation (libs.play.services.auth)
 
     // coroutines
     implementation(libs.kotlinx.coroutines.core)
@@ -109,6 +111,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.ktor.client.cio)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

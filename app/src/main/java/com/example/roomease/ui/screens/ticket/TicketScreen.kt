@@ -220,6 +220,7 @@ fun TicketItem(
             if (ticket.status != TicketStatus.COMPLETED) {
                 Button(onClick = {
                     scope.launch {
+/*
                         val closed = closeTicketOnBackend(ticket.userId, ticket.category.toString())
                         if (closed) {
                             viewModel.closeTicket(ticket.id.toString(), ticket.userId)
@@ -227,6 +228,9 @@ fun TicketItem(
                         } else {
                             Toast.makeText(context, "Failed to close ticket", Toast.LENGTH_SHORT).show()
                         }
+*/
+                        viewModel.closeTicket(ticket.id.toString(), ticket.userId)
+                        onClose()
                     }
                 }) {
                     Text("Close Ticket")
