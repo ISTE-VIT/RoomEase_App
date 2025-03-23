@@ -72,7 +72,7 @@ fun SignInScreen(
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "RoomEase Logo",
-                modifier = Modifier.size(256.dp)
+                modifier = Modifier.size(200.dp)
             )
 
             Spacer(modifier = Modifier.padding(16.dp))

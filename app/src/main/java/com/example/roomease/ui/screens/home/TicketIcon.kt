@@ -44,7 +44,7 @@ fun TicketIcon(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             //verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(12.dp)
         ) {
             Image(
                 painter = painterResource(id = imageId),

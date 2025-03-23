@@ -91,7 +91,7 @@ fun Login2Screen(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.7f)
                     .padding(16.dp)
             )
 
